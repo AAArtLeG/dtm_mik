@@ -789,7 +789,8 @@
 //}
 
 #include <iostream> 
-#include <Eigen> 
+#include <Eigen/Dense> 
+#include <Eigen/Sparse>
 #include <random> 
 #include <set> 
 #include <fstream>  
