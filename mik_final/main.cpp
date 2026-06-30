@@ -789,7 +789,7 @@
 //}
 
 #include <iostream> 
-#include <Eigen/Dense> 
+#include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <random> 
 #include <set> 
@@ -798,6 +798,7 @@
 #include <iomanip>
 #include "gdal_priv.h"
 #include "cpl_conv.h" // CPLMalloc
+#include <filesystem>
 
 #include <chrono>
 using namespace Eigen;
@@ -2576,7 +2577,7 @@ void saveTXTFor3D(vector<vector<double>> matrixSol, int n, double h, int iter) {
     ofstream file;
     //std::string filenameCurrentTXT = "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifMinHores1515ByFunc" + std::to_string(iter) + "ForWolfram.txt";
     //std::string filenameCurrentTXT = "SinXSin3GSV2Iter" + std::to_string(iter) + "ForWolfram.txt";
-    std::string filenameCurrentTXT = "SinXSin3PSORV2Iter" + std::to_string(iter) + "ForWolfram.txt";
+    std::string filenameCurrentTXT = "output/SinXSin3PSORV2Iter" + std::to_string(iter) + "ForWolfram.txt";
     //std::string filenameCurrentTXT = "Real2PSORV2Iter" + std::to_string(iter) + "ForWolfram.txt";
 
     file.open(filenameCurrentTXT, ios::out);
@@ -2584,7 +2585,7 @@ void saveTXTFor3D(vector<vector<double>> matrixSol, int n, double h, int iter) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             file << i << " " << j << " " << matrixSol[i][j] << endl;
-        }
+        }   
     }
 
     file.close();
@@ -3566,6 +3567,10 @@ double f(double x, double y) {
 
 int main() {
 
+    std::filesystem::create_directories("output");
+
+    const std::string outDir = "output/";
+
     double a = 1;
 
     int n = 2001;
@@ -3627,7 +3632,7 @@ int main() {
     vector<vector<double>> inputMatrix;
     //string filename = "inputForSolveMembr2.txt";  // Specify your input file name here 
     //string filename = "inputForSolveMembrTestObr21AfterEraseV2Ostacle1V2.txt";
-    string filename = "inputForSolveMembrTestObr21AfterEraseV2.txt";
+    string filename = "src/inputForSolveMembrTestObr21AfterEraseV2.txt";
     //string filename = "inputForSolveMembrIter1Sept.txt";
 
 
@@ -3636,13 +3641,13 @@ int main() {
 
     //saveMatrixToPGM(matrix, "inputMatrixIter0.pgm");
 
-    filename = "Hores_square_DTM_data.pgm";
+    filename = "src/Hores_square_DTM_data.pgm";
 
     //vector<vector<double>> downloadedMatrixData = readPGMToMatrix(filename);
 
     //saveTXTFor3D(downloadedMatrixData, n, h, -1);
 
-    filename = "solutionWaters50TestObr21AfterEraseV2ForCompareObst1V2.txt";
+    filename = "src/solutionWaters50TestObr21AfterEraseV2ForCompareObst1V2.txt";
 
     vector<vector<double>> laplaceSolution1 = loadMatrixFromFile(filename);
 
@@ -3652,7 +3657,7 @@ int main() {
 
 //auto mask = readTIFFToBinaryMatrix("ZBGIS_Vodstvo_Hores.tif");
 
-    vector<vector<double>> downloadedMatrixDataTif = readTIFFToMatrix("dmr5_jtsk03_10m_avg_Hores_clip_from_final.tif");
+    vector<vector<double>> downloadedMatrixDataTif = readTIFFToMatrix("src/dmr5_jtsk03_10m_avg_Hores_clip_from_final.tif");
 
     /*vector<vector<double>> inputTif(rowsTifFull, vector<double>(colsTifFull));
 
@@ -3831,7 +3836,7 @@ for (int i = 0; i < 2001; i++) {
 
                                                                                                                                                                                                    //unkoment zacatok for SOR
 //vector<vector<double>> inputTifFromFile = loadMatrixFromFile("ZBGIS_Vodstvo_Hores_v2_AfterErase.txt");
-    vector<vector<double>> inputTifFromFile = loadMatrixFromFile("ZBGIS_Vodstvo_Hores_v2.txt");
+    vector<vector<double>> inputTifFromFile = loadMatrixFromFile("src/ZBGIS_Vodstvo_Hores_v2.txt");
 
     //vector<vector<double>> inputTifFromFileErase = readPGMToMatrix("ZBGIS_Vodstvo_Hores_v2.pgm");
     ///*for (int i = 0; i < 2001; i++) {
@@ -4245,23 +4250,23 @@ for (int i = 0; i < 2001; i++) {
         }
     }
 
-    saveMatrixToPGM(underSurfaceWaterl, "underSurfaceWaterLaplaceCASNoErase.pgm");
-    saveMatrixToPGM(onSurfaceWaterl, "onSurfaceWaterLaplaceCASNoErase.pgm");
+    saveMatrixToPGM(underSurfaceWaterl, outDir + "underSurfaceWaterLaplaceCASNoErase.pgm");
+    saveMatrixToPGM(onSurfaceWaterl, outDir + "onSurfaceWaterLaplaceCASNoErase.pgm");
 
     vector<vector<double>> difCurrentLap(rows, vector<double>(cols));
 
     difCurrentLap = compareValuesV2(laplaceSolution, downloadedMatrixDataTif500, 0.1);
-    saveMatrixToPGM(difCurrentLap, "diff01WaterLaplaceCASNoErase.pgm");
+    saveMatrixToPGM(difCurrentLap, outDir + "diff01WaterLaplaceCASNoErase.pgm");
     difCurrentLap = compareValuesV2(laplaceSolution, downloadedMatrixDataTif500, 0.2);
-    saveMatrixToPGM(difCurrentLap, "diff02WaterLaplaceCASNoErase.pgm");
+    saveMatrixToPGM(difCurrentLap, outDir + "diff02WaterLaplaceCASNoErase.pgm");
     difCurrentLap = compareValuesV2(laplaceSolution, downloadedMatrixDataTif500, 0.3);
-    saveMatrixToPGM(difCurrentLap, "diff03WaterLaplaceCASNoErase.pgm");
+    saveMatrixToPGM(difCurrentLap, outDir + "diff03WaterLaplaceCASNoErase.pgm");
     difCurrentLap = compareValuesV2(laplaceSolution, downloadedMatrixDataTif500, 0.5);
-    saveMatrixToPGM(difCurrentLap, "diff05WaterLaplaceCASNoErase.pgm");
+    saveMatrixToPGM(difCurrentLap, outDir + "diff05WaterLaplaceCASNoErase.pgm");
     difCurrentLap = compareValuesV2(laplaceSolution, downloadedMatrixDataTif500, 0.7);
-    saveMatrixToPGM(difCurrentLap, "diff07WaterLaplaceCASNoErase.pgm");
+    saveMatrixToPGM(difCurrentLap, outDir + "diff07WaterLaplaceCASNoErase.pgm");
     difCurrentLap = compareValuesV2(laplaceSolution, downloadedMatrixDataTif500, 1.0);
-    saveMatrixToPGM(difCurrentLap, "diff10WaterLaplaceCASNoErase.pgm");
+    saveMatrixToPGM(difCurrentLap, outDir + "diff10WaterLaplaceCASNoErase.pgm");
 
     double minValue = 200;
     double maxValue = matrix[0][0];
@@ -4447,8 +4452,8 @@ for (int i = 0; i < 2001; i++) {
                 onSurfaceWater1[j][k] = 0;
         }
     }
-    saveMatrixToPGM(underSurfaceWater1, "underSurfaceWaterTifAvgHoresIterMayNoErase" + std::to_string(1) + ".pgm");
-    saveMatrixToPGM(onSurfaceWater1, "onSurfaceWaterTifAvgHoresIterMayNoErase" + std::to_string(1) + ".pgm");
+    saveMatrixToPGM(underSurfaceWater1, outDir + "underSurfaceWaterTifAvgHoresIterMayNoErase" + std::to_string(1) + ".pgm");
+    saveMatrixToPGM(onSurfaceWater1, outDir + "onSurfaceWaterTifAvgHoresIterMayNoErase" + std::to_string(1) + ".pgm");
 
     double tL2 = sqrt(L2Norm);
     double L2Norm0 = tL2;
@@ -4463,7 +4468,7 @@ for (int i = 0; i < 2001; i++) {
     //file.open("solutionWatersSept.txt", ios::out);
 
                                                                                                                                                 //uncomment when do hydrological model
-    file.open("SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoErase.txt", ios::out);
+    file.open(outDir + "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoErase.txt", ios::out);
 
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
@@ -4477,11 +4482,11 @@ for (int i = 0; i < 2001; i++) {
                                                                                                                                                 //uncomment when do hydrological model        
     vector<vector<double>> dif = compareValues(matrixFinalPrev, downloadedMatrixDataTif500, 0.1);
 
-    saveMatrixToPGM(dif, "diff01SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoErase.pgm");
+    saveMatrixToPGM(dif, outDir + "diff01SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoErase.pgm");
 
-    saveMatrixToPGM(matrixFinalPrev, "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoErase.pgm");
+    saveMatrixToPGM(matrixFinalPrev, outDir + "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoErase.pgm");
 
-    saveMatrixToFile(matrixFinalPrev, "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoErase.txt");
+    saveMatrixToFile(matrixFinalPrev, outDir + "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoErase.txt");
     //printMatrix(matrix);
 
     double sum = 0.0;
@@ -4798,7 +4803,7 @@ for (int i = 0; i < 2001; i++) {
 
     cout << "dif pixels:" << counter << endl;
     //uncomment next section when do hydrological model
-    file.open("SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoEraseIter1.txt", ios::out);
+    file.open(outDir + "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoEraseIter1.txt", ios::out);
 
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
@@ -4810,11 +4815,11 @@ for (int i = 0; i < 2001; i++) {
 
     vector<vector<double>> dif1 = compareValues(matrixFinalIter1, downloadedMatrixDataTif500, 0.1);
 
-    saveMatrixToPGM(dif1, "diff01SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoEraseIter1.pgm");
+    saveMatrixToPGM(dif1, outDir + "diff01SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoEraseIter1.pgm");
 
-    saveMatrixToPGM(matrixFinalIter1, "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoEraseIter1.pgm");
+    saveMatrixToPGM(matrixFinalIter1, outDir + "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoEraseIter1.pgm");
 
-    saveMatrixToFile(matrixFinalIter1, "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoEraseIter1.txt");
+    saveMatrixToFile(matrixFinalIter1, outDir + "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresMayNoEraseIter1.txt");
     /*minValue = 10000;
     maxValue = 0;
     for (int i = 0; i < rows; ++i) {
@@ -5047,21 +5052,21 @@ for (int i = 0; i < 2001; i++) {
                         onSurfaceWater[j][k] = 0;
                 }
             }
-            saveMatrixToPGM(underSurfaceWater, "underSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
-            saveMatrixToPGM(onSurfaceWater, "onSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(underSurfaceWater, outDir + "underSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(onSurfaceWater, outDir + "onSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
 
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.1);
-            saveMatrixToPGM(difCurrent, "diff01SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(difCurrent, outDir + "diff01SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.2);
-            saveMatrixToPGM(difCurrent, "diff02SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(difCurrent, outDir + "diff02SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.3);
-            saveMatrixToPGM(difCurrent, "diff03SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(difCurrent, outDir + "diff03SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.5);
-            saveMatrixToPGM(difCurrent, "diff05SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(difCurrent, outDir + "diff05SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.7);
-            saveMatrixToPGM(difCurrent, "diff07SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(difCurrent, outDir + "diff07SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 1.0);
-            saveMatrixToPGM(difCurrent, "diff10SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(difCurrent, outDir + "diff10SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
         }
 
         //save data every 100 iters
@@ -5070,19 +5075,19 @@ for (int i = 0; i < 2001; i++) {
 //saveTXTFor3D(matrixIterPrev, n, h, counter2 + 3);
             cout << endl;
             cout << "L2 norm solution after Iter " << i + 2 << " " << L2Norm << endl;
-            saveMatrixToPGM(matrixIterPrev, "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(matrixIterPrev, outDir + "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.1);
-            saveMatrixToPGM(matrixIterPrev, "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(matrixIterPrev, outDir + "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.2);
-            saveMatrixToPGM(difCurrent, "diff01SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(difCurrent, outDir + "diff01SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.3);
-            saveMatrixToPGM(difCurrent, "diff03SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(difCurrent, outDir + "diff03SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.5);
-            saveMatrixToPGM(difCurrent, "diff05SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(difCurrent, outDir + "diff05SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.7);
-            saveMatrixToPGM(difCurrent, "diff07SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(difCurrent, outDir + "diff07SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 1);
-            saveMatrixToPGM(difCurrent, "diff10SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(difCurrent, outDir + "diff10SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
 
             vector<vector<double>> underSurfaceWater(rows, vector<double>(cols));
             vector<vector<double>> onSurfaceWater(rows, vector<double>(cols));
@@ -5099,8 +5104,8 @@ for (int i = 0; i < 2001; i++) {
                         onSurfaceWater[j][k] = 0;
                 }
             }
-            saveMatrixToPGM(underSurfaceWater, "underSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
-            saveMatrixToPGM(onSurfaceWater, "onSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(underSurfaceWater, outDir + "underSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+            saveMatrixToPGM(onSurfaceWater, outDir + "onSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
             saveTXTFor3D(matrixIterPrev, n, h, counter2 + 3);
 
             //toto mozne bude deletnut
@@ -5143,10 +5148,10 @@ saveMatrixToPGM(onSurfaceWater, "onSurfaceWaterSin3Iter" + std::to_string(counte
                 onSurfaceWater[j][k] = 0;
         }
     }
-    saveMatrixToPGM(underSurfaceWater, "underSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
-    saveMatrixToPGM(onSurfaceWater, "onSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+    saveMatrixToPGM(underSurfaceWater, outDir + "underSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
+    saveMatrixToPGM(onSurfaceWater, outDir + "onSurfaceWaterTifAvgHoresIterNoEraseMay" + std::to_string(counter2 + 3) + ".pgm");
     //uncomment when do hydrological model
-    std::string filenameCurrentTXT = "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".txt";
+    std::string filenameCurrentTXT = outDir + "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".txt";
 
     file.open(filenameCurrentTXT, ios::out);
 
@@ -5164,26 +5169,26 @@ saveMatrixToPGM(onSurfaceWater, "onSurfaceWaterSin3Iter" + std::to_string(counte
 
     //saveMatrixToPGM(matrixIterNext, "inputMatrixIter" + std::to_string(counter2 + 4) + ".pgm");
                                                                                                                                                 //uncomment when do hydrological model
-    saveMatrixToPGM(difCurrent, "diff07SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
+    saveMatrixToPGM(difCurrent, outDir + "diff07SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
 
     difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.5);
-    saveMatrixToPGM(difCurrent, "diff05SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
+    saveMatrixToPGM(difCurrent, outDir + "diff05SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
 
     difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.3);
-    saveMatrixToPGM(difCurrent, "diff03SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
+    saveMatrixToPGM(difCurrent, outDir + "diff03SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
 
     difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.2);
-    saveMatrixToPGM(difCurrent, "diff02SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
+    saveMatrixToPGM(difCurrent, outDir + "diff02SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
 
     difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 0.1);
-    saveMatrixToPGM(difCurrent, "diff01SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
+    saveMatrixToPGM(difCurrent, outDir + "diff01SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
 
     difCurrent = compareValues(matrixIterPrev, downloadedMatrixDataTif500, 1);
-    saveMatrixToPGM(difCurrent, "diff1SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
+    saveMatrixToPGM(difCurrent, outDir + "diff1SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
 
-    saveMatrixToPGM(matrixIterPrev, "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
+    saveMatrixToPGM(matrixIterPrev, outDir + "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".pgm");
 
-    saveMatrixToFile(matrixIterPrev, "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".txt");
+    saveMatrixToFile(matrixIterPrev, outDir + "SeptZacatPodmienkLaplaceSolutionWithObstacleChangesInSolutionTifAvgHoresNoEraseMay10e-2Iter" + std::to_string(counter2 + 3) + ".txt");
 
 
     return 0;
