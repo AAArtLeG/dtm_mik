@@ -9,6 +9,7 @@
 #include "gdal_priv.h"
 #include "cpl_conv.h" // CPLMalloc
 #include <filesystem>
+#include <omp.h>
 
 #include <chrono>
 using namespace Eigen;
@@ -1388,13 +1389,17 @@ VectorXd solveSchemeSORLaplace(vector<vector<double>> matrix, vector<vector<doub
     return x;
 }
 
-VectorXd solveScheme(vector<vector<double>> matrix, vector<vector<double>> matrixInPrevTime, int n, double tau = 10, double h = 1) {
+
+typedef SparseMatrix<double, RowMajor> SpMat;
+
+VectorXd solveScheme(vector<vector<double>>& matrix, vector<vector<double>>& matrixInPrevTime, int n, double tau = 10, double h = 1) {
     int rows = n;
     int cols = n;
     int total_size = rows * cols;
 
-    SparseMatrix<double> A(n * n, n * n);
-    SparseMatrix<double> temp(n * n, n * n);
+    //SparseMatrix<double> A(n * n, n * n);
+    SpMat A(n * n, n * n);
+
     VectorXd b(n * n), x(n * n);
 
     A.reserve(Eigen::VectorXi::Constant(n * n, 5));
@@ -1403,7 +1408,7 @@ VectorXd solveScheme(vector<vector<double>> matrix, vector<vector<double>> matri
     double c = tau / pow(h, 2);
 
     //cout << c << endl;
-
+    auto tb0 = std::chrono::steady_clock::now();
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
             int idx = i * cols + j;
@@ -1510,11 +1515,22 @@ VectorXd solveScheme(vector<vector<double>> matrix, vector<vector<double>> matri
             }
         }
     }
+    auto tb1 = std::chrono::steady_clock::now();
+    std::cout << "build: " << std::chrono::duration<double>(tb1 - tb0).count() << " s\n";
 
-    temp = A;
     A.makeCompressed();
-    BiCGSTAB<SparseMatrix<double>> solver;
+    BiCGSTAB<SpMat> solver;
     solver.compute(A);
+
+    //for (int t : {1, 2, 4, 8, 12, 24}) {
+    //    Eigen::setNbThreads(t);
+    //    auto t0 = std::chrono::steady_clock::now();
+    //    x = solver.solve(b);
+    //    auto t1 = std::chrono::steady_clock::now();
+    //    std::cout << t << " threads: "
+    //        << std::chrono::duration<double>(t1 - t0).count() << " s\n";
+    //}
+
     x = solver.solve(b);
 
     return x;
@@ -1551,7 +1567,8 @@ double f(double x, double y) {
 }
 
 int main() {
-
+    Eigen::initParallel();
+    Eigen::setNbThreads(12);
     std::filesystem::create_directories("output");
 
     const std::string outDir = "output/";
